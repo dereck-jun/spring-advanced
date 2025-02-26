@@ -1,4 +1,4 @@
-package org.example.expert.domain.auth.dto.request;
+package org.example.expert.domain.comment.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -8,11 +8,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SigninRequest {
+public class CommentUpdateRequest {
 
     @NotBlank
-    private String email;
-
-    @NotBlank
-    private String password;
+    private String contents;
 }

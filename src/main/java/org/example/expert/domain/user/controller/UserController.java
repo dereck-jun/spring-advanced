@@ -6,23 +6,31 @@ import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.service.UserService;
+import org.example.expert.domain.user.service.UserReadService;
+import org.example.expert.domain.user.service.UserWriteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserWriteService userWriteService;
+    private final UserReadService userReadService;
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserResponse> getUser(@PathVariable long userId) {
-        return ResponseEntity.ok(userService.getUser(userId));
+        return ResponseEntity.ok(userReadService.getUserResponse(userId));
     }
 
-    @PutMapping("/users")
+    @PutMapping
     public void changePassword(@Auth AuthUser authUser, @Valid @RequestBody UserChangePasswordRequest userChangePasswordRequest) {
-        userService.changePassword(authUser.getId(), userChangePasswordRequest);
+        userWriteService.changePassword(authUser.getId(), userChangePasswordRequest);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@Auth AuthUser authUser, @PathVariable long userId) {
+        userWriteService.deleteUser(authUser.getId(), userId);
     }
 }

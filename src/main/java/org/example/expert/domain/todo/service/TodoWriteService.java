@@ -16,11 +16,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class TodoService {
+public class TodoWriteService {
 
     private final TodoRepository todoRepository;
     private final WeatherClient weatherClient;
@@ -48,36 +48,47 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
-
-        return todos.map(todo -> new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail()),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        ));
-    }
-
-    public TodoResponse getTodo(long todoId) {
+    @Transactional
+    public TodoResponse updateTodo(AuthUser authUser, long todoId, String title, String contents) {
         Todo todo = todoRepository.findByIdWithUser(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+            .orElseThrow(() -> new InvalidRequestException("할 일을 찾을 수 없습니다."));
 
-        User user = todo.getUser();
+        if (!todo.getUser().getId().equals(authUser.getId())) {
+            throw new InvalidRequestException("해당 요청에 대한 권한이 없습니다.");
+        }
+
+        if (!StringUtils.hasText(title) && !StringUtils.hasText(contents)) {
+            throw new InvalidRequestException("공백일 수 없습니다.");
+        }
+
+        if (title != null) {
+            todo.updateTitle(title);
+        }
+
+        if (contents != null) {
+            todo.updateContents(contents);
+        }
 
         return new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(user.getId(), user.getEmail()),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
+            todo.getId(),
+            todo.getTitle(),
+            todo.getContents(),
+            todo.getWeather(),
+            new UserResponse(authUser.getId(), authUser.getEmail()),
+            todo.getCreatedAt(),
+            todo.getModifiedAt()
         );
+    }
+
+    @Transactional
+    public void deleteTodo(long userId, long todoId) {
+        Todo todo = todoRepository.findByIdWithUser(todoId)
+            .orElseThrow(() -> new InvalidRequestException("할 일을 찾을 수 없습니다."));
+
+        if (userId != todo.getUser().getId()) {
+            throw new InvalidRequestException("해당 요청에 대한 권한이 없습니다.");
+        }
+
+        todoRepository.delete(todo);
     }
 }

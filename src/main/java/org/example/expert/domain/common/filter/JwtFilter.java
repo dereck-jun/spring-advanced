@@ -1,4 +1,4 @@
-package org.example.expert.config;
+package org.example.expert.domain.common.filter;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.expert.domain.common.util.JwtUtil;
 import org.example.expert.domain.user.enums.UserRole;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
@@ -32,7 +33,7 @@ public class JwtFilter implements Filter {
         ContentCachingRequestWrapper cachingRequest = new ContentCachingRequestWrapper(httpRequest);
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        String url = httpRequest.getRequestURI();
+        String url = cachingRequest.getRequestURI();
 
         if (url.startsWith("/auth")) {
             chain.doFilter(cachingRequest, response);

@@ -1,7 +1,6 @@
 package org.example.expert.domain.common.aspect;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,7 +20,6 @@ import java.util.UUID;
 @Slf4j
 @Aspect
 @Component
-@RequiredArgsConstructor
 public class LogTraceAspect {
 
     @Pointcut("@annotation(org.example.expert.domain.common.annotation.LogTrace)")
